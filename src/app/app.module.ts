@@ -14,6 +14,7 @@ import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { PeopleService } from './services/people/people.service';
 import { GraphQLModule } from './graphql.module';
 import { DetailsComponent } from './details/details.component';
+import { PageStateService } from './services/pageState/pageState.service';
 
 @NgModule({
   declarations: [
@@ -39,6 +40,7 @@ import { DetailsComponent } from './details/details.component';
   ],
   providers: [
     PeopleService,
+    PageStateService
   ],
   bootstrap: [AppComponent]
 })

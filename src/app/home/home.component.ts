@@ -5,6 +5,7 @@ import characters from '../dtos/characters';
 import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
 import { Filter } from '../services/people/queries';
 import { Router } from '@angular/router';
+import { PageStateService } from '../services/pageState/pageState.service';
 
 @Component({
   selector: 'app-home',
@@ -13,12 +14,9 @@ import { Router } from '@angular/router';
 export class HomeComponent implements OnInit {
 
   public itemPerPage: number = 10;
-  public query: string;
   page$: Observable<characters>;
-  public pageIndex: number;
-  public firstPart: boolean;
   public myForm: FormGroup;
-  private filter: Filter;
+
 
   filterItems: Array<any> = [
     { value: 'name', viewValue: 'Name' },
@@ -28,10 +26,8 @@ export class HomeComponent implements OnInit {
 
   constructor(private ps: PeopleService,
     private formBuilder: FormBuilder,
-    private router: Router) {
-    this.pageIndex = 1;
-    this.firstPart = true;
-    this.filter = null;
+    private router: Router,
+    public pageState: PageStateService) {
 
     this.myForm = this.formBuilder.group({
       query: new FormControl('', Validators.required),
@@ -44,7 +40,7 @@ export class HomeComponent implements OnInit {
   ngOnInit(): void {
     this.onInputChange();
     this.onSelectChange();
-    this.page$ = this.ps.page(this.pageIndex, this.firstPart);
+    this.getPage();
   }
 
   inputHasValue(): boolean {
@@ -52,22 +48,24 @@ export class HomeComponent implements OnInit {
   }
 
   clearSreach(): void {
+    this.pageState.filter = null;
+    this.pageState.query = '';
     this.initForm();
-    this.filter = null;
     this.getPage();
   }
 
   onInputChange(): void {
     this.myForm.get('query').valueChanges.subscribe(val => {
       if(!val){
-        this.filter = null;
+        this.pageState.filter = null;
         return;
       }
 
       const condition = this.myForm.get('condition').value;
-      this.filter = new Filter(val, condition);
-      this.pageIndex = 1;
-      this.firstPart = true;
+      this.pageState.filter = new Filter(val, condition);
+      this.pageState.pageIndex = 1;
+      this.pageState.firstPart = true;
+      this.pageState.query = val;
       this.getPage();
     });
   }
@@ -83,68 +81,38 @@ export class HomeComponent implements OnInit {
         return;
       }
 
-      this.filter = new Filter(query, val);
-      this.pageIndex = 1;
-      this.firstPart = true;
+      this.pageState.filter = new Filter(query, val);
+      this.pageState.pageIndex = 1;
+      this.pageState.firstPart = true;
+      this.pageState.condition = val;
       this.getPage();
     });
   }
 
   onNextPage(): void {
-    if (this.pageIndex % 2 == 0 && this.firstPart) {
-      this.firstPart = false;
-      this.getPage();
-    }
-    else if (this.pageIndex % 2 == 0 && !this.firstPart) {
-      this.pageIndex++;
-      this.firstPart = true;
-      this.getPage();
-    }
-    else if (this.pageIndex % 2 != 0 && this.firstPart) {
-      this.firstPart = false;
-      this.getPage();
-    }
-    else if (this.pageIndex % 2 != 0 && !this.firstPart) {
-      this.pageIndex++;
-      this.firstPart = true;
-      this.getPage();
-    }
+    this.pageState.nextPage();
+    this.getPage();
   }
 
   onPrevPage(): void {
-    if (this.pageIndex % 2 == 0 && this.firstPart) {
-      this.pageIndex--;
-      this.firstPart = false;
-      this.getPage();
-    }
-    else if (this.pageIndex % 2 == 0 && !this.firstPart) {
-      this.firstPart = true;
-      this.getPage();
-    }
-    else if (this.pageIndex % 2 != 0 && this.firstPart) {
-      this.pageIndex--;
-      this.firstPart = false;
-      this.getPage();
-    }
-    else if (this.pageIndex % 2 != 0 && !this.firstPart) {
-      this.firstPart = true;
-      this.getPage();
-    }
+    this.pageState.prevPage();
+
+    this.getPage();
   }
 
   private getPage() {
-    if (!this.filter) {
-      this.page$ = this.ps.page(this.pageIndex, this.firstPart);
+    if (!this.pageState.filter) {
+      this.page$ = this.ps.page(this.pageState.pageIndex, this.pageState.firstPart);
     }
     else {
-      this.page$ = this.ps.pageFilter(this.pageIndex, this.firstPart, this.filter);
+      this.page$ = this.ps.pageFilter(this.pageState.pageIndex, this.pageState.firstPart, this.pageState.filter);
     }
   }
 
   private initForm():void{
     this.myForm.setValue({
-      query: '',
-      condition: 'name'
+      query: this.pageState.query,
+      condition: this.pageState.condition
     });
   }
 }

@@ -29,5 +29,5 @@
   Loading stuff...
 </ng-template>
 
-<button mat-raised-button *ngIf="(page$ | async)?.info.count / itemPerPage > pageIndex" (click)="onNextPage()">Next Page</button>
-<button mat-raised-button *ngIf="pageIndex > 1 || !firstPart" (click)="onPrevPage()">Prev Page</button>
+<button mat-raised-button *ngIf="(page$ | async)?.info.count / itemPerPage > pageState.pageIndex" (click)="onNextPage()">Next Page</button>
+<button mat-raised-button *ngIf="pageState.pageIndex > 1 || !pageState.firstPart" (click)="onPrevPage()">Prev Page</button>
