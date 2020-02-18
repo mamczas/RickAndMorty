@@ -1,0 +1,15 @@
+
+<mat-card class="people-card" *ngIf="person$ | async as person; else loading">
+  <mat-card-header>
+    <mat-card-title>{{ person.name }}</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <img mat-card-image src="{{person.image}}">
+    <p>Gender : {{person.gender}}</p>
+    <p>Species: {{person.species}}</p>
+  </mat-card-content>
+</mat-card>
+
+<ng-template #loading>
+  Loading stuff...
+</ng-template>

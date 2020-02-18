@@ -1,0 +1,33 @@
+<form [formGroup]="myForm">
+  <mat-form-field>
+    <mat-label>Search criteria</mat-label>
+    <input matInput type="text" formControlName="query">
+    <button mat-button *ngIf="inputHasValue()" matSuffix mat-icon-button aria-label="Clear" (click)="clearSreach()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </mat-form-field>
+  
+  <mat-form-field>
+    <mat-label>Filter Items</mat-label>
+    <mat-select formControlName="condition">
+      <mat-option *ngFor="let item of filterItems" [value]="item.value" >
+        {{item.viewValue}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</form>
+
+
+
+<mat-list *ngIf="page$ | async as page; else loading" role="list">
+  <mat-list-item (click)="onItemClicked(item.id)" *ngFor="let item of page?.results" role="listitem">
+    <h3 matLine> {{item.name}} </h3>
+    <p matLine>Gender : {{item.gender}} Species: {{item.species}} </p>
+  </mat-list-item>
+</mat-list>
+<ng-template #loading>
+  Loading stuff...
+</ng-template>
+
+<button mat-raised-button *ngIf="(page$ | async)?.info.count / itemPerPage > pageIndex" (click)="onNextPage()">Next Page</button>
+<button mat-raised-button *ngIf="pageIndex > 1 || !firstPart" (click)="onPrevPage()">Prev Page</button>
